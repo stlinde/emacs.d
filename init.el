@@ -504,12 +504,14 @@
                              (toggle-word-wrap)
                              (visual-line-mode)))
 
+
   (setopt org-capture-templates
           `(("t" "todo" entry (file+headline "" "Tasks")  ; "" => `org-default-notes-file'
              "* TODO %?\n%U\n" :clock-resume t)
+            ("j" "journal" entry (file+headline "" "Journal")
+             "* %T \n\n%?" :clock-resume t :prepend t)
             ("n" "note" entry (file+headline "" "Notes")
-             "* %? :NOTE:\n%U\n%a\n" :clock-resume t)
-            ))
+             "* %? :NOTE:\n%U\n%a\n" :clock-resume t)))
 
   ;; Targets include this file and any file contributing to the agenda - up to 5 levels deep
   (setopt org-refile-targets '((nil :maxlevel . 5) (org-agenda-files :maxlevel . 5))
