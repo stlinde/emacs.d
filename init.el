@@ -266,8 +266,11 @@
 ;; Marginalia
 (use-package marginalia
   :ensure t
+  :defer 1
   :config
-  (add-hook 'after-init-hook 'marginalia-mode))
+  (setq marginalia-max-relative-age 0)  ;; Use absolute time
+  (marginalia-mode))
+  
 
 (use-package which-key
   :ensure t
