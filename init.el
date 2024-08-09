@@ -119,6 +119,15 @@
   (setopt ef-themes-variable-pitch-ui t
           ef-themes-mixed-fonts t))
 
+(use-package doom-themes
+  :ensure t
+  :config
+  (setopt doom-themes-enable-bold t
+          doom-themes-enable-italic t)
+  (doom-themes-org-config))
+
+
+
 ;; Setup fonts - use weights defined in user varables.
 (set-face-attribute 'default nil
                     :family "Iosevka Comfy"
@@ -728,63 +737,10 @@
 	  org-insert-heading-respect-content t
 	  org-hide-emphasis-markers t
 	  org-pretty-entities t
-	  org-ellipsis "…")
+	  org-ellipsis "…"
+          org-modern-star 'replace)
 
   ;; Enable org-modern
   (global-org-modern-mode))
-
-;; Denote
-;; (use-package denote
-;;   :ensure t
-;;   :hook ((dired-mode . denote-dired-mode))
-;;   :bind (("C-c n n" . denote)
-;;          ("C-c n c" . denote-region)
-;;          ("C-c n N" . denote-type)
-;;          ("C-c n d" . denote-date)
-;;          ("C-c n z" . denote-signature) ;; Zettlekasten mnemonic
-;;          ("C-c n s" . denote-subdirectory)
-;;          ("C-c n t" . denote-template)
-;;          ("C-c n i" . denote-link) ;; Insert mnemonic
-;;          ("C-c n I" . denote-add-links)
-;;          ("C-c n b" . denote-backlinks)
-;;          ("C-c n l f" . denote-find-link)
-;;          ("C-c n l b" . denote-find-backlink)
-;;          ("C-c n r" . denote-rename-file)
-;;          ("C-c n R" . denote-rename-file-using-front-matter)
-
-;;          :map dired-mode-map
-;;          ("C-c C-d C-i" . denote-link-dired-marked-notes)
-;;          ("C-c C-d C-r" . denote-dired-rename-files)
-;;          ("C-c C-d C-k" . denote-dired-rename-marked-files-with-keywords)
-;;          ("C-c C-d C-R" . denote-dired-rename-marked-files-using-front-matter))
-;;   :config
-;;   (setopt denote-directory (expand-file-name "~/data/notes/")
-;;           denote-save-buffers nil
-;;           denote-known-keywords '("emacs" "risk" "trading" "analytics" "yggdrasil" "python")
-;;           denote-infer-keywords t
-;;           denote-sort-keywords t
-;;           denote-prompts '(title keywords)
-;;           denote-excluded-directories-regexp nil
-;;           denote-excluded-keywords-regexp nil
-;;           denote-rename-confirmations '(rewrite-front-matter modify-file-name)
-;;           denote-date-prompt-use-org-read-date t
-;;           denote-date-format nil
-;;           denote-backlinks-show-context t)
-
-;;   (with-eval-after-load 'org-capture
-;;     (setopt denote-org-capture-specifiers "%l\n%i\n%?")
-;;     (add-to-list 'org-capture-templates
-;;                  '("n" "New note (with denote.el)" plain
-;;                    (file denote-last-path)
-;;                    #'denote-org-capture
-;;                    :no-save t
-;;                    :immediate-finish nil
-;;                    :kill-buffer t
-;;                    :jump-to-captured t))))
-
-;; (use-package consult-denote
-;;   :ensure t
-;;   :bind (("C-c n f" . consult-denote-find)
-;;          ("C-c n g" . consult-denote-grep)))
 
 ;;; init.el ends here
