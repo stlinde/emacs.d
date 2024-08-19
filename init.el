@@ -6,7 +6,7 @@
 (defconst shl/emacs-d (file-name-as-directory user-emacs-directory)
   "Directory of emacs.d")
 
-(defvar shl/theme 'modus-vivendi-tinted
+(defvar shl/theme 'modus-vivendi
   "Theme to load on startup.")
 
 (defvar shl/font-weight 'medium
@@ -119,14 +119,106 @@
   (setopt ef-themes-variable-pitch-ui t
           ef-themes-mixed-fonts t))
 
-(use-package doom-themes
+(use-package fontaine
   :ensure t
+  :if (display-graphic-p)
+  :hook ((after-init . fontaine-mode)
+         (after-init . (lambda ()
+                         (fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular)))))
   :config
-  (setopt doom-themes-enable-bold t
-          doom-themes-enable-italic t)
-  (doom-themes-org-config))
+  (setopt x-underline-at-descent-line nil)
+    (setq fontaine-presets
+        '((small
+           :default-family "Iosevka Comfy Motion"
+           :default-height 80
+           :variable-pitch-family "Iosevka Comfy Duo")
+          (regular) ; like this it uses all the fallback values and is named `regular'
+          (medium
+           :default-weight medium
+           :default-height 115
+           :bold-weight extrabold)
+          (large
+           :inherit medium
+           :default-height 150)
+          (live-stream
+           :default-family "Iosevka Comfy Wide Motion"
+           :default-height 150
+           :default-weight medium
+           :fixed-pitch-family "Iosevka Comfy Wide Motion"
+           :variable-pitch-family "Iosevka Comfy Wide Duo"
+           :bold-weight extrabold)
+          (presentation
+           :default-height 180)
+          (jumbo
+           :default-height 260)
+          (t
+           ;; I keep all properties for didactic purposes, but most can be
+           ;; omitted.  See the fontaine manual for the technicalities:
+           ;; <https://protesilaos.com/emacs/fontaine>.
+           :default-family "Iosevka Comfy"
+           :default-weight medium
+           :default-slant normal
+           :default-height 100
 
+           :fixed-pitch-family "Iosevka Comfy"
+           :fixed-pitch-weight nil
+           :fixed-pitch-slant nil
+           :fixed-pitch-height 1.0
 
+           :fixed-pitch-serif-family nil
+           :fixed-pitch-serif-weight nil
+           :fixed-pitch-serif-slant nil
+           :fixed-pitch-serif-height 1.0
+
+           :variable-pitch-family "Iosevka Comfy Motion Duo"
+           :variable-pitch-weight nil
+           :variable-pitch-slant nil
+           :variable-pitch-height 1.0
+
+           :mode-line-active-family nil
+           :mode-line-active-weight nil
+           :mode-line-active-slant nil
+           :mode-line-active-height 1.0
+
+           :mode-line-inactive-family nil
+           :mode-line-inactive-weight nil
+           :mode-line-inactive-slant nil
+           :mode-line-inactive-height 1.0
+
+           :header-line-family nil
+           :header-line-weight nil
+           :header-line-slant nil
+           :header-line-height 1.0
+
+           :line-number-family nil
+           :line-number-weight nil
+           :line-number-slant nil
+           :line-number-height 1.0
+
+           :tab-bar-family nil
+           :tab-bar-weight nil
+           :tab-bar-slant nil
+           :tab-bar-height 1.0
+
+           :tab-line-family nil
+           :tab-line-weight nil
+           :tab-line-slant nil
+           :tab-line-height 1.0
+
+           :bold-family nil
+           :bold-weight bold
+           :bold-slant nil
+           :bold-height 1.0
+
+           :italic-family nil
+           :italic-weight nil
+           :italic-slant italic
+           :italic-height 1.0
+
+           :line-spacing nil)))
+
+  (with-eval-after-load 'pulsar
+    (add-hook 'fontaine-set-preset-hook #'pulsar-pulse-line)))
 
 ;; Setup fonts - use weights defined in user varables.
 (set-face-attribute 'default nil
@@ -228,6 +320,25 @@
   (global-set-key (kbd "C-x 2") 'vsplit-last-buffer)
   (global-set-key (kbd "C-x 3") 'hsplit-last-buffer))
 
+;;; Frame-isolated buffers
+(use-package beframe
+  :ensure t
+  :hook (after-init . beframe-mode)
+
+  :bind (;; Override the `set-fill-column' that I have no use for.
+         ("C-x f" . other-frame-prefix)
+         ;; Bind Beframe commands to a prefix key. Notice the -map as I am
+         ;; binding keymap here, not a command.
+         ("C-c b" . beframe-prefix-map)
+         ;; Replace the generic `buffer-menu'.  With a prefix argument, this
+         ;; commands prompts for a frame.  Call the `buffer-menu' via M-x if
+         ;; you absolutely need the global list of buffers.
+         ("C-x C-b" . beframe-buffer-menu)
+         ;; Not specific to Beframe, but since it renames frames (by means
+         ;; of `beframe-mode') it is appropriate to have this here:
+         ("C-x B" . select-frame-by-name))
+  :config
+  (setopt beframe-functions-in-frames '(project-prompt-project-dir)))
 
 ;; Replace text while typing if a region is selected
 (add-hook 'after-init-hook 'delete-selection-mode)
@@ -304,7 +415,14 @@
 (global-set-key (kbd "S-<return>") 'shl/newline-at-end-of-line)
 
 ;; Subword-mode enables moving in CamelCase and snake_case
-(add-hook 'after-init-hook 'subword-mode)
+(add-hook 'after-init-hook 'global-subword-mode)
+
+;; Expand Region makes for a nicer way to mark stuff
+(use-package expand-region
+  :ensure t
+  :commands er/expand-region
+  :bind ("M-h" . er/expand-region))
+
 
 ;; Use avy to jump around the screen
 (use-package avy
