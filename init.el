@@ -6,10 +6,10 @@
 (defconst shl/emacs-d (file-name-as-directory user-emacs-directory)
   "Directory of emacs.d")
 
-(defvar shl/theme 'modus-vivendi
+(defvar shl/theme 'modus-operandi-deuteranopia
   "Theme to load on startup.")
 
-(defvar shl/font-weight 'medium
+(defvar shl/font-weight 'semilight
   "Font weight to use.")
 
 ;;;; Elpaca
@@ -859,6 +859,14 @@
           org-modern-star 'replace)
 
   ;; Enable org-modern
+
   (global-org-modern-mode))
+
+;;;; Misc
+
+(use-package pdf-tools
+  :ensure t
+  :config
+  (pdf-tools-install))
 
 ;;; init.el ends here
