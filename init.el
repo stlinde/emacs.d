@@ -6,11 +6,11 @@
 (defconst shl/emacs-d (file-name-as-directory user-emacs-directory)
   "Directory of emacs.d")
 
-(defvar shl/theme 'modus-operandi-deuteranopia
+(defvar shl/theme 'modus-vivendi-deuteranopia
   "Theme to load on startup.")
 
-(defvar shl/font-weight 'semilight
-  "Font weight to use.")
+(defvar shl/fontaine-preset 'regular
+  "Fontaine preset to use.")
 
 ;;;; Elpaca
 (defvar elpaca-installer-version 0.7)
@@ -61,8 +61,12 @@
 (when (fboundp 'pixel-scroll-precision-mode)
   (pixel-scroll-precision-mode))
 
+(use-package diminish
+  :ensure t)
+
 (use-package gcmh
   :ensure t
+  :diminish
   :init
   (add-hook 'after-init-hook (lambda() (gcmh-mode)))
   :config
@@ -75,6 +79,7 @@
 (use-package spacious-padding
   :ensure t
   :defer nil
+  :diminish
   :config
   (setq spacious-padding-widths
       '( :internal-border-width 15
@@ -100,8 +105,7 @@
         modus-themes-italic-constructs t
         modus-themes-variable-pitch-ui t
         modus-themes-slanted-constructs t
-        modus-themes-org-blocks 'gray-background)
-  (modus-themes-select shl/theme))
+        modus-themes-org-blocks 'gray-background))
 
 (use-package ef-themes
   :ensure t
@@ -119,12 +123,17 @@
   (setopt ef-themes-variable-pitch-ui t
           ef-themes-mixed-fonts t))
 
+;; Load the desired theme
+(elpaca-wait)
+(load-theme shl/theme :no-confirm)
+
+
 (use-package fontaine
   :ensure t
   :if (display-graphic-p)
-  :hook ((after-init . fontaine-mode)
-         (after-init . (lambda ()
-                         (fontaine-set-preset (or (fontaine-restore-latest-preset) 'regular)))))
+  :hook ((emacs-startup . fontaine-mode)
+         (emacs-startup . (lambda ()
+                         (fontaine-set-preset shl/fontaine-preset))))
   :config
   (setopt x-underline-at-descent-line nil)
     (setq fontaine-presets
@@ -132,7 +141,8 @@
            :default-family "Iosevka Comfy Motion"
            :default-height 80
            :variable-pitch-family "Iosevka Comfy Duo")
-          (regular) ; like this it uses all the fallback values and is named `regular'
+          (regular
+           :default-weight medium) ; like this it uses all the fallback values and is named `regular'
           (medium
            :default-weight medium
            :default-height 115
@@ -140,17 +150,8 @@
           (large
            :inherit medium
            :default-height 150)
-          (live-stream
-           :default-family "Iosevka Comfy Wide Motion"
-           :default-height 150
-           :default-weight medium
-           :fixed-pitch-family "Iosevka Comfy Wide Motion"
-           :variable-pitch-family "Iosevka Comfy Wide Duo"
-           :bold-weight extrabold)
           (presentation
            :default-height 180)
-          (jumbo
-           :default-height 260)
           (t
            ;; I keep all properties for didactic purposes, but most can be
            ;; omitted.  See the fontaine manual for the technicalities:
@@ -218,27 +219,16 @@
            :line-spacing nil)))
 
   (with-eval-after-load 'pulsar
-    (add-hook 'fontaine-set-preset-hook #'pulsar-pulse-line)))
-
-;; Setup fonts - use weights defined in user varables.
-(set-face-attribute 'default nil
-                    :family "Iosevka Comfy"
-                    :height 105
-                    :weight shl/font-weight)
-(set-face-attribute 'variable-pitch nil
-		    :family "Iosevka Comfy Motion Duo"
-		    :height 105
-		    :weight shl/font-weight)
-(set-face-attribute 'fixed-pitch nil
-		    :family "Iosevka Comfy"
-		    :height 105
-		    :weight shl/font-weight)
+    (add-hook 'fontaine-set-preset-hook #'pulsar-pulse-line))
+  (fontaine-set-preset shl/fontaine-preset))
 
 ;; Setup line numbers
-(when (fboundp 'display-line-numbers-mode)
-  (setq-default display-line-numbers-width 3)
-  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
-  (add-hook 'org-mode-hook 'display-line-numbers-mode))
+(use-package display-line-numbers
+  :ensure nil
+  :hook ((org-mode . display-line-numbers-mode)
+         (prog-mode . display-line-numbers-mode))
+  :config
+  (setopt display-line-numbers-width 3))
 
 
 ;; Setup fill-column
@@ -248,8 +238,21 @@
   (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode))
 
 ;; Setup modeline
-(setq display-time-format " %a %e %b, %H:%M ")
-(display-time-mode)
+(use-package time
+  :ensure nil
+  :hook (after-init . display-time-mode)
+  :config
+  (setopt display-time-format " %a %b %e, %H:%M "
+          display-time-interval 60
+          display-time-default-load-average nil
+          display-time-string-forms
+          '((propertize
+             (format-time-string display-time-format now)
+             'face 'display-time-and-date-time
+             'help-echo (format-time-string "%a %e %b, %Y" now))
+            " ")))
+
+
 
 ;; Enable battery in modeline, if on laptop
 (require 'battery)
@@ -258,11 +261,6 @@
                                 (battery-format "%B"
                                                 (funcall battery-status-function)))))
   (display-battery-mode 1))
-
-(use-package doom-modeline
-  :ensure t
-  :config
-  (doom-modeline-mode 1))
 
 ;;;; Defaults
 (use-package exec-path-from-shell
@@ -341,17 +339,15 @@
   (setopt beframe-functions-in-frames '(project-prompt-project-dir)))
 
 ;; Replace text while typing if a region is selected
-(add-hook 'after-init-hook 'delete-selection-mode)
+(use-package delsel
+  :ensure nil
+  :hook (after-init . delete-selection-mode))
 
 ;; Automatically revert buffers when file changes on disk
-(add-hook 'after-init-hook 'global-auto-revert-mode)
-(setq global-auto-revert-non-file-buffers t
-      auto-revert-verbose nil)
-;; (with-eval-after-load 'autorevert
-;;   (diminish 'auto-revert-mode))
-
-;; Highlighted region is highlighted with the 'region' face
-(add-hook 'after-init-hook 'transient-mark-mode)
+(use-package autorevert
+  :ensure nil
+  :hook (after-init . global-auto-revert-mode)
+  :config (setopt auto-revert-verbose t))
 
 ;;;; Minibuffer
 ;; Vertico
@@ -401,28 +397,22 @@
 ;;;; Editing
 
 ;; Ensure that opening parentheses are paired with closing
-(when (fboundp 'electric-pair-mode)
-  (add-hook 'after-init-hook 'electric-pair-mode))
-(add-hook 'after-init-hook 'electric-indent-mode)
+(use-package electric
+  :ensure nil
+  :hook ((prog-mode . electric-pair-mode)
+         (prog-mode . electric-indent-mode)))
 
-;; Newlines
-(defun shl/newline-at-end-of-line ()
-  "Move to end of line, enter a newline, and reindent."
-  (interactive)
-  (move-end-of-line 1)
-  (newline-and-indent))
-
-(global-set-key (kbd "S-<return>") 'shl/newline-at-end-of-line)
 
 ;; Subword-mode enables moving in CamelCase and snake_case
-(add-hook 'after-init-hook 'global-subword-mode)
+(use-package subword
+  :diminish subword-mode
+  :hook (after-init . global-subword-mode))
 
 ;; Expand Region makes for a nicer way to mark stuff
 (use-package expand-region
   :ensure t
   :commands er/expand-region
   :bind ("M-h" . er/expand-region))
-
 
 ;; Use avy to jump around the screen
 (use-package avy
@@ -445,6 +435,10 @@
     (add-to-list 'page-break-lines-modes 'browse-kill-ring-mode)))
 
 ;;;; Development
+;;; Documentation
+(use-package eldoc
+  :diminish eldoc-mode)
+
 ;;; Terminal
 (use-package eat
   :ensure '(eat :type git
