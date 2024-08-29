@@ -9,7 +9,7 @@
 (defvar shl/theme 'modus-vivendi-deuteranopia
   "Theme to load on startup.")
 
-(defvar shl/fontaine-preset 'regular
+(defvar shl/fontaine-preset 'large
   "Fontaine preset to use.")
 
 ;;;; Elpaca
@@ -141,8 +141,10 @@
            :default-family "Iosevka Comfy Motion"
            :default-height 80
            :variable-pitch-family "Iosevka Comfy Duo")
-          (regular
+          (regular-dark
            :default-weight medium) ; like this it uses all the fallback values and is named `regular'
+          (regular-light 
+           :default-weight semilight) ; like this it uses all the fallback values and is named `regular'
           (medium
            :default-weight medium
            :default-height 115
@@ -439,6 +441,9 @@
 (use-package eldoc
   :diminish eldoc-mode)
 
+;; Compilation
+;; (add-hook 'compilation-finish-functions 'switch-to-buffer-other-window 'compilation)
+
 ;;; Terminal
 (use-package eat
   :ensure '(eat :type git
@@ -455,13 +460,14 @@
   :ensure t
   :config
   (setopt treesit-auto-install 'prompt)
+  (delete 'c treesit-auto-langs)
   (global-treesit-auto-mode))
 
 ;;; LSP
 (use-package eglot
   :ensure nil
   :hook ((python-ts-mode . eglot-ensure)
-         (c-ts-mode . eglot-ensure)
+         ;; (c-ts-mode . eglot-ensure)
          (c++-ts-mode . eglot-ensure)))
 
 ;;; Completion
@@ -557,6 +563,20 @@
   (add-hook 'after-init-hook #'envrc-global-mode))
 
 ;;;; Languages
+;;; C
+
+(use-package cc-mode
+  :ensure nil
+  :config
+  (setopt c-default-style '((other . "linux"))
+          c-basic-offset tab-width))
+
+;; (use-package c-ts-mode
+;;   :ensure nil
+;;   :hook (c-ts-mode . (lambda ()
+;;                        (setq-local c-ts-mode-indent-style 'linux)
+;;                        (c-ts-mode-toggle-comment-style -1))))
+
 ;;; Python
 (defvar shl/ipython-command '("ipython" "-i" "--simple-prompt" "--no-color-info" "--InteractiveShell.display_page=True")
   "Command to initialize the IPython repl.")
