@@ -660,7 +660,8 @@
   (setopt org-todo-keywords
           (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!/!)")
                   (sequence "PROJECT(p)" "|" "DONE(d!/!)" "CANCELLED(c@/!)")
-                  (sequence "WAITING(w@/!)" "DELEGATED(e!)" "HOLD(h)" "|" "CANCELLED(c@/!)")))
+                  (sequence "WAITING(w@/!)" "DELEGATED(e!)" "HOLD(h)" "|" "CANCELLED(c@/!)")
+                  (sequence "META (m) | ENDED (e)")))
           org-todo-repeat-to-state "NEXT")
 
   (setopt org-todo-keyword-faces
